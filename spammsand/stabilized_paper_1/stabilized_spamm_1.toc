@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {I}Introduction}{1}{}
+\tocdepth@munge 
+\contentsline {section}{\numberline {}Contents}{2}{}
+\tocdepth@restore 
+\contentsline {section}{\numberline {II}Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}{2}{}
+\contentsline {subsection}{\numberline {A}Occlusion-Cull }{2}{}
+\contentsline {subsection}{\numberline {B}Bound}{3}{}
+\contentsline {subsection}{\numberline {C}Related Research}{3}{}
+\contentsline {section}{\numberline {III}First Order Newton-Shulz Iteration}{4}{}
+\contentsline {subsection}{\numberline {A}Sign Iteration}{4}{}
+\contentsline {subsection}{\numberline {B}Square Root Iteration}{4}{}
+\contentsline {subsection}{\numberline {C}Mapping}{5}{}
+\contentsline {section}{\numberline {IV}Error Flows in Square Root Iteration}{5}{}
+\contentsline {subsection}{\numberline {A}Stability}{5}{}
+\contentsline {subsection}{\numberline {B}Fr\"{e}chet Derivatives}{5}{}
+\contentsline {subsection}{\numberline {C}Displacements}{5}{}
+\contentsline {subsection}{\numberline {D}Most Approximate but Still Stable}{6}{}
+\contentsline {section}{\numberline {V}Regularization}{7}{}
+\contentsline {subsection}{\numberline {A}A Product Representation}{7}{}
+\contentsline {subsection}{\numberline {B}Effective by one order}{7}{}
+\contentsline {section}{\numberline {VI}Locality}{9}{}
+\contentsline {subsection}{\numberline {A}Spatial, metric and temporal locality}{9}{}
+\contentsline {subsection}{\numberline {B}Algebraic locality}{9}{}
+\contentsline {subsection}{\numberline {C}Complexity reduction}{9}{}
+\contentsline {section}{\numberline {VII}Summary}{10}{}
+\contentsline {section}{\numberline {VIII}Conclusions}{11}{}
+\appendix 
+\contentsline {section}{\numberline {A}Implementation}{12}{}
+\contentsline {section}{\numberline {B}Data}{12}{}
+\contentsline {section}{\numberline {}References}{12}{}

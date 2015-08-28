@@ -1,0 +1,4 @@
+gnuplot < plot_33tube_unscaled_dual
+gnuplot < plot_33tube_unscaled_stab
+convert 33_nanotube_cond10_noscale_dual.eps 33_nanotube_cond10_noscale_dual.png
+convert 33_nanotube_cond10_noscale_stab.eps 33_nanotube_cond10_noscale_stab.png

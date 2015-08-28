@@ -1,0 +1,53 @@
+#set term pngcairo dashed enhanced font 'Courier Bold,16'
+#set term pngcairo dashed transparent enhanced font 
+#set terminal postscript enhanced eps
+set terminal postscript eps enhanced color font 'Courier-Bold,16' 
+
+#set size 3.5,2.5 
+
+set output "wtrbx_100_noscale_stab.eps" 
+
+set logscale y
+
+set style line 1 lt 1 lc rgb "red"     lw 3
+set style line 2 lt 1 lc rgb "green"   lw 3
+set style line 3 lt 1 lc rgb "blue"    lw 3
+set style line 4 lt 1 lc rgb "black"   lw 3
+set style line 5 lt 5 lc rgb "red"     lw 3
+set style line 6 lt 5 lc rgb "green"   lw 3
+set style line 7 lt 5 lc rgb "blue"    lw 3
+
+set size ratio .75
+#set ylabel '' offset 3,0
+set xlabel 'k' offset 0,0.5 
+
+set label 4 "(n-tr{~x{.4-}})/n"           tc rgb "black" at 18, 0.01
+set label 46 "{ {/Symbol t}_y=1d-5}"      tc rgb "black"   at 35, 0.0005
+set label 47 "{ {/Symbol t}_y=1d-6}"      tc rgb "black"   at 35, 0.000005
+
+set label 1  "x_{{/Symbol d}y_{k-1}}"     tc rgb "red"   at 31.5, 0.01
+set label 15 "{ /Symbol d}y_{k-1}"        tc rgb "red"   at 31.5, 0.9
+set label 16 "{ {/Symbol t}_y=1d-5}"      tc rgb "red"   at 35, 0.8
+set label 17 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 35, 0.08
+
+set label 2 "x_{{/Symbol d}z_{k-1}}"                tc rgb "green" at 25, 0.000001
+set label 22 "{ /Symbol d}z_{k-1}"  tc rgb "green" at 12, 300. 
+set label 25 "{ {/Symbol t}_y=1d-4}"  tc rgb "green" at 20, 50000. 
+set label 26 "{ {/Symbol t}_y=1d-5}"  tc rgb "green" at 35, 50000. 
+set label 27 "{ {/Symbol t}_y=1d-6}"  tc rgb "green" at 35, 3500. 
+
+#set label 3 "|x_{{/Symbol d}x_{k-1}}|"                tc rgb "blue"  at 35, 2.5
+#set label 7 "|{ {/Symbol t}=1d-3}|"  tc rgb "blue"  at 35, 0.02 
+#set label 7 "|{ /Symbol d}x_{k-1}|"  tc rgb "blue"  at 32, 0.02 
+
+
+set yrange [0.00000001:10000.0]
+plot [2:16] "tau_2_4_stab.dat"     using 1:7  w lines ls 1 notitle,\
+            "tau_2_4_stab.dat"     using 1:9  w lines ls 2 notitle,\
+            "tau_2_4_stab.dat"     using 1:6  w lines ls 4 notitle,\
+            "tau_2_4_stab.dat"     using 1:8  w lines ls 5 notitle,\
+            "tau_2_4_stab.dat"     using 1:10 w lines ls 6 notitle,\
+            "tau_2_3_stab.dat"     using 1:8  w lines ls 5 notitle,\
+            "tau_2_3_stab.dat"     using 1:10 w lines ls 6 notitle,\
+            "tau_2_2_stab.dat"     using 1:8  w lines ls 5 notitle,\
+            "tau_2_2_stab.dat"     using 1:10 w lines ls 6 notitle

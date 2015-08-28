@@ -1,0 +1,6 @@
+  reading matrix in mm format from 33_x64_10_S.mm
+  building a sandwich ..... |z>=|.1E-02>|.1E-02>|.1E-02>|.1E-02>|.1E-02>|.1E-02>|
+  starting to build a spamm sandwich ... 
+  problem dimension, n =         6924        6924
+  tau_0 = .10D-02, tau_s = .10D-09, d = .10D+00, shift = .00D+00
+  hi extremal ......... .21D+02

@@ -56,8 +56,8 @@ CONTAINS
 
        if(a%frill%leaf)then
 
-          a%frill%needs_initialization=.FALSE.
-          a%chunk=0
+          a%frill%init=.FALSE.
+          a%chunk=SpAMM_zero
           DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
              a%chunk(I,I)=SpAMM_one
           ENDDO
@@ -78,10 +78,10 @@ CONTAINS
 
   RECURSIVE FUNCTION SpAMM_trace_tree_2d_symm_recur(a) RESULT(tr)
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a
-    REAL(SPAMM_KIND)                              :: tr, tr00,tr11
+    REAL(SpAMM_KIND)                              :: tr, tr00,tr11
     integer                                       :: i
 
-    tr=0
+    tr=SpAMM_Zero
     IF(.NOT.ASSOCIATED(a))RETURN
 
     IF(a%frill%leaf)THEN ! Leaf condition ?
@@ -151,7 +151,7 @@ CONTAINS
   recursive function SpAMM_absmax_tree_2d_symm_recur (A) result(absmax)
 
     type(SpAMM_tree_2d_symm), pointer, intent(in)   :: A
-    real(SPAMM_KIND)                                :: absmax
+    real(SpAMM_KIND)                                :: absmax
     integer, dimension(:,:),  pointer               :: bb
 
     absmax = 0
@@ -181,9 +181,9 @@ CONTAINS
   recursive function SpAMM_twist_tree_2d_symm_double_recur (A, AT) result(twist)
 
     type(SpAMM_tree_2d_symm), pointer  :: A,AT
-    real(SPAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
+    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
-    twist  = 0
+    twist  = SpAMM_zero
 
     if(.not. associated(a))return
     if(.not. associated(at))return
@@ -209,9 +209,9 @@ CONTAINS
   function SpAMM_twist_tree_2d_symm(A) result(twist)
 
     type(SpAMM_tree_2d_symm), pointer  :: A
-    real(SPAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
+    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
-    twist  = 0
+    twist  = SpAMM_zero
 
     if(.not. associated(a))return
 
@@ -262,7 +262,7 @@ CONTAINS
     type(spamm_tree_2d_symm), pointer, intent(in) :: A
     integer, intent(in) :: file_unit
 
-    write(file_unit, "(I8)") SPAMM_CHUNK_SIZE
+    write(file_unit, "(I8)") SPAMM_BLOCK_SIZE
 
     call spamm_tree_print_leaves_2d_symm_recur(A%child_00, file_unit)
     call spamm_tree_print_leaves_2d_symm_recur(A%child_01, file_unit)

@@ -1,0 +1,70 @@
+#set term pngcairo dashed enhanced font 'Courier Bold,16'
+#set term pngcairo dashed transparent enhanced font 
+#set terminal postscript enhanced eps
+set terminal postscript eps enhanced color font 'Courier-Bold,16' 
+
+#set size 3.5,2.5 
+
+set output "33_tube_k10_regularized_stab.eps" 
+
+set logscale y
+
+set size ratio .75
+#set ylabel '' offset 3,0
+set xlabel 'k' offset 0,0.5 
+
+set label 1 "e_k"       tc rgb "black" at 8.5, 0.008
+set label 2 "v_{y_k}"   tc rgb "red"   at 11,  8.5
+set label 3 "v_{z_k}"   tc rgb "blue"  at 11, .04
+
+
+set yrange [0.0001:11.0]
+
+set style line 1 lt 1 lc rgb "black"    lw 3
+
+set style line 21 lt 1 lc rgb "red"     lw 1
+set style line 31 lt 1 lc rgb "blue"    lw 1
+set style line 22 lt 1 lc rgb "red"     lw 1.5
+set style line 32 lt 1 lc rgb "blue"    lw 1.5
+set style line 23 lt 1 lc rgb "red"     lw 2.
+set style line 33 lt 1 lc rgb "blue"    lw 2.
+set style line 24 lt 1 lc rgb "red"     lw 2.5
+set style line 34 lt 1 lc rgb "blue"    lw 2.5
+set style line 25 lt 1 lc rgb "red"     lw 3.
+set style line 35 lt 1 lc rgb "blue"    lw 3.
+set style line 26 lt 1 lc rgb "red"     lw 3.5
+set style line 36 lt 1 lc rgb "blue"    lw 3.5
+set style line 27 lt 1 lc rgb "red"     lw 4.
+set style line 37 lt 1 lc rgb "blue"    lw 4.
+
+plot [2:20] "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 21 notitle,\
+            "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 31 notitle,\
+            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 22 notitle,\
+            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 32 notitle,\
+            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 23 notitle,\
+            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 33 notitle,\
+            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 24 notitle,\
+            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 34 notitle,\
+            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 25 notitle,\
+            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 35 notitle,\
+            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 26 notitle,\
+            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 36 notitle,\
+            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 27 notitle,\
+            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 37 notitle
+
+
+
+
+	    
+
+
+
+
+

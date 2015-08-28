@@ -1,0 +1,4 @@
+gnuplot < plot_wtrbx_unscaled_stab
+gnuplot < plot_wtrbx_unscaled_dual
+convert wtrbx_100_noscale_dual.eps wtrbx_100_noscale_dual.pdf
+convert wtrbx_100_noscale_stab.eps wtrbx_100_noscale_stab.pdf

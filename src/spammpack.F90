@@ -1,7 +1,16 @@
-!> @defgroup types_group SpAMM Data Types
+! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan"
 
-!> @defgroup algebraic_types_group SpAMM Algebraic data Structures (SALGDS)
-!! @ingroup types_group
+! cmake -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_Fortran_FLAGS="-DLAPACK_FOUND -stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback"
+
+module spammpack
+
+  use spamm_parameters
+  use spamm_structures
+  use spamm_decoration
+  use spamm_xstructors
+  use spamm_conversion
+  use spamm_elementals
+  use spamm_nbdyalgbra
 
 !> @defgroup decorations_group SpAMM tree decorations (STDEC)
 !! @ingroup types_group

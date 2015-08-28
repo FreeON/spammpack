@@ -1,0 +1,48 @@
+rm tube36x_scaled*.dat
+#
+# THESE ARE ALL b=16 AND DENSE_DIAGNOSTIC RUNS:
+# UNSCALED DUAL TUBE:
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-7  1.d-1 0.d0 D U R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-8  1.d-1 0.d0 D U R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-9  1.d-1 0.d0 D U R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-10 1.d-1 0.d0 D U R
+# SCALED DUAL TUBE:
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-7  1.d-1 0.d0 D S R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-8  1.d-1 0.d0 D S R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-9  1.d-1 0.d0 D S R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-10 1.d-1 0.d0 D S R
+# SCALED STAB TUBE:
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-3 1.d-1 0.d0 S S R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-4 1.d-1 0.d0 S S R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-5 1.d-1 0.d0 S S R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-6 1.d-1 0.d0 S S R
+# mv *.dat *.spamm stabilized_paper_1/fig_33_tube_cond_10_regularized/
+
+
+# THESE ARE ALL b=16 AND NORMAL RUNS:
+rm  *.dat *.spamm 
+# MIN LEVEL SHIFTED UNSCALED DUAL TUBE:
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-1 1.d-2  1.d-1 1.d-1 D U 
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-1 1.d-3  1.d-1 1.d-1 D U R
+#./spammsand_invsqrt 33_x48_10_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
+#./spammsand_invsqrt 33_x64_10_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
+./spammsand_invsqrt 33_x96_10_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
+
+
+
+##>>>./spammsand_invsqrt 33_x36_10_S.mm 1.d-1 1.d-3  1.d-1 1.d-1 D U R
+# MIN LEVEL SHIFTED UNSCALED STAB TUBE:
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-2  1.d-1 1.d-1 S U R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-3  1.d-1 1.d-1 S U R
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-3 1.d-4  1.d-1 1.d-1 S U R
+#./spammsand_invsqrt 33_x36_10_S.mm 1.d-2 1.d-4 1.d-1 1.d-1 S U R
+#./spammsand_invsqrt 33_x48_10_S.mm 1.d-2 1.d-4 1.d-1 1.d-1 S U R
+
+
+
+
+
+mv *.dat *.spamm stabilized_paper_1/fig_33_tube_cond_10_regularized/
+
+
+

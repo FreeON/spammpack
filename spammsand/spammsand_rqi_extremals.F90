@@ -1,8 +1,6 @@
 MODULE SpAMMSand_rqi_extremals
 
-  USE spammpack
-
-  implicit none
+  USE spammpack 
 
 CONTAINS
   !> SpAMM routines for spectral estimation (extremal eigenvalues)
@@ -11,7 +9,7 @@ CONTAINS
   FUNCTION SpAMMSand_rqi_extremal(a,tau,high_O) RESULT(Omega)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: a
-    REAL(SPAMM_KIND),      INTENT(IN)                 :: Tau
+    REAL(SpAMM_KIND),      INTENT(IN)                 :: Tau
     LOGICAL, OPTIONAL                                 :: high_O
 
     TYPE(SpAMM_tree_1d), POINTER :: x=>NULL(),g=>NULL(),h=>NULL()
@@ -19,13 +17,10 @@ CONTAINS
     INTEGER              :: CG, MinMax
     INTEGER, PARAMETER   :: NCG=500
 
-    REAL(SPAMM_KIND)     :: omega,omega_old
-    REAL(SPAMM_KIND)     :: xx, hh, xh, hx, xAx, xAh, hAx, hAh
-    REAL(SPAMM_KIND)     :: sclr_Ax, sclr__x, beta, dot_g, dot_gold
-    REAL(SPAMM_KIND)     :: LambdaPlus, LambdaMins, RQIPlus, RQIMins
-
-    integer :: gsign
-    integer :: m
+    REAL(SpAMM_KIND)     :: omega,omega_old
+    REAL(SpAMM_KIND)     :: xx, hh, xh, hx, xAx, xAh, hAx, hAh
+    REAL(SpAMM_KIND)     :: sclr_Ax, sclr__x, beta, dot_g, dot_gold
+    REAL(SpAMM_KIND)     :: LambdaPlus, LambdaMins, RQIPlus, RQIMins
 
     MINMAX=2 ! default is high (max) extremal
     IF(PRESENT(high_O))THEN
@@ -47,14 +42,14 @@ CONTAINS
     M=a%frill%ndimn(1)              ! dimension of A along the [i] direction
     g   =>SpAMM_new_top_tree_1d(M)  ! gradient (analytic)
     h   =>SpAMM_new_top_tree_1d(M)  ! conjugate gradient (corrected g)
-    Ax  =>SpAMM_new_top_tree_1d(M)  ! gradient with the matrix
+    Ax  =>SpAMM_new_top_tree_1d(M)  ! gradient with the matrix 
     Ah  =>SpAMM_new_top_tree_1d(M)  ! conjugate gradient with the matrix
-    gOld=>SpAMM_new_top_tree_1d(M)
+    gOld=>SpAMM_new_top_tree_1d(M) 
     hOld=>SpAMM_new_top_tree_1d(M)
 
     x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
 
-!!    CALL SpAMM_print_tree_1d_recur (x)
+!!    CALL SpAMM_print_tree_1d_recur (x) 
 
     DO CG=1,NCG ! conjugate gradient iteration
 
@@ -69,21 +64,21 @@ CONTAINS
        sclr_Ax = + gsign*SpAMM_Two/xx          ! g= + 2*(Ax-omega*x)/xx (minimizing)
        sclr__x = - gsign*SpAMM_Two*omega/xx    ! g= - 2*(Ax-omega*x)/xx (maximizing)
 
-       g => SpAMM_tree_1d_plus_tree_1d ( g, sclr_Ax, Ax, inplace=0.0_SPAMM_KIND)
-       g => SpAMM_tree_1d_plus_tree_1d ( g, sclr__x,  x)
+       g => SpAMM_tree_1d_plus_tree_1d ( g, sclr_Ax, Ax, inplace=SpAMM_zero) 
+       g => SpAMM_tree_1d_plus_tree_1d ( g, sclr__x,  x)                     
 
        dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
-       dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)
+       dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
 
        IF(CG>1.AND.MOD(CG,15).NE.0)THEN
           IF(dot_gold/abs(omega).LE.1D-10)THEN
              ! if we are really close, steepest descents should be enuf ...
-             beta=0
+             beta=SpAMM_Zero
           ELSE
-             beta=MAX(0.0_SPAMM_KIND, dot_g/dot_gold)
+             beta=MAX(SpAMM_Zero,dot_g/dot_gold)
           ENDIF
        ELSE
-          beta=0
+          beta=SpAMM_Zero
        ENDIF
 
 !!$       IF(MinMax==1)THEN
@@ -98,7 +93,7 @@ CONTAINS
             .OR. (MinMax==2.AND.Omega<Omega_old) )EXIT
 
        ! the conjugate gradient, h = g + beta*hOld
-       h => SpAMM_tree_1d_PLUS_tree_1d ( h, SpAMM_one, g, inplace=0.0_SPAMM_KIND)
+       h => SpAMM_tree_1d_PLUS_tree_1d ( h, SpAMM_one, g, inplace=SpAMM_zero) 
        h => SpAMM_tree_1d_PLUS_tree_1d ( h,      beta, h)
 
        ! Ah = A.h
@@ -109,7 +104,7 @@ CONTAINS
        hh =SpAMM_tree_1d_DOT_tree_1d_recur(h,h)
        xAh=SpAMM_tree_1d_DOT_tree_1d_recur(x,Ah)
        hAx=SpAMM_tree_1d_DOT_tree_1d_recur(h,Ax)
-       hAh=SpAMM_tree_1d_DOT_tree_1d_recur(h,Ah)
+       hAh=SpAMM_tree_1d_DOT_tree_1d_recur(h,Ah)        
 
 
 
@@ -117,8 +112,8 @@ CONTAINS
        hAx=xAh
 
        ! gOld = g; hOld = h
-       gOld => SpAMM_tree_1d_copy_tree_1d (g, gOld)
-       hOld => SpAMM_tree_1d_copy_tree_1d (h, hOld)
+       gOld => SpAMM_tree_1d_copy_tree_1d (g, gOld) 
+       hOld => SpAMM_tree_1d_copy_tree_1d (h, hOld) 
 
        ! roots of the line search (+/-) ...
        LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
@@ -135,16 +130,16 @@ CONTAINS
             /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
 
        ! update of the eigenvector ..
-       IF(MinMax==1)THEN ! for the minimizer ...
+       IF(MinMax==1)THEN ! for the minimizer ...          
           IF(RQIMins<RQIPlus)THEN
              x => SpAMM_tree_1d_plus_tree_1d(x, LambdaMins, h) ! x = x + LambdaMins*h
-          ELSE
+          ELSE             
              x => SpAMM_tree_1d_plus_tree_1d(x, LambdaPlus, h) ! x = x + LambdaPlus*h
           ENDIF
        ELSE ! for the maximizer ...
           IF(RQIMins>RQIPlus)THEN
              x => SpAMM_tree_1d_plus_tree_1d(x, LambdaMins, h) ! x = x + LambdaMins*h
-          ELSE
+          ELSE             
              x => SpAMM_tree_1d_plus_tree_1d(x, LambdaPlus, h) ! x = x + LambdaPlus*h
           ENDIF
        ENDIF
@@ -165,4 +160,4 @@ CONTAINS
 
   END FUNCTION SpAMMSand_rqi_extremal
 
-END MODULE SPAMMSAND_RQI_EXTREMALS
+END MODULE SPAMMSAND_RQI_EXTREMALS 

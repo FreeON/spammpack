@@ -8,7 +8,7 @@ module SpAMMsand_inverse_squareroot
   implicit none
 
   ! Convergence parameters
-  REAL(SPAMM_KIND), PARAMETER ::  Approx3  = 2.85d00
+  REAL(SpAMM_KIND), PARAMETER ::  Approx3  = 2.85d00
   REAL(SPAMM_KIND), PARAMETER ::  ShiftSw  = 5.d-1
   !
 #ifdef DENSE_DIAGNOSTICS
@@ -16,17 +16,17 @@ module SpAMMsand_inverse_squareroot
 
   character(len=132) :: file_dual, file_stab
 
-  real(SPAMM_KIND), dimension(:,:), ALLOCATABLE ::   i_d, s_d, y_k, y_k1, z_k, z_k1, x_k, x_k1, m_x_k1,          &
+  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   i_d, s_d, y_k, y_k1, z_k, z_k1, x_k, x_k1, m_x_k1,          &
        z_tld_k_stab, z_tld_k1_stab, x_tld_k_stab, x_tld_k1_stab,  m_x_tld_k1_stab,  y_tld_k_stab, y_tld_k1_stab, &
        z_tld_k_dual, z_tld_k1_dual, x_tld_k_dual, x_tld_k1_dual,  m_x_tld_k1_dual,  y_tld_k_dual, y_tld_k1_dual
 
-  REAL(SPAMM_KIND) :: scal_shift,shft_shift, scal_mapp, shft_mapp
+  REAL(spamm_kind) :: scal_shift,shft_shift, scal_mapp, shft_mapp
 
 
 #endif
   character(len=300)                             :: corefile
 
-  real(SPAMM_KIND), dimension(:,:), ALLOCATABLE ::   z_d, x_d,y_d, zz, z_1,z_2,z_3,z_4
+  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   z_d, x_d,y_d, zz, z_1,z_2,z_3,z_4
 
   integer :: LWORK
   integer :: LIWORK
@@ -121,7 +121,7 @@ contains
 
 
   FUNCTION Sigmoid(Scale, Inflect, x)
-    REAL(SPAMM_KIND) :: Scale, Inflect, Sigmoid, x
+    REAL(SpAMM_KIND) :: Scale, Inflect, Sigmoid, x
     Sigmoid=SpAMM_One/(SpAMM_One+EXP(- Scale * (x-Inflect) ) )
 
   END FUNCTION Sigmoid
@@ -132,13 +132,13 @@ contains
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: s
     TYPE(SpAMM_tree_2d_symm) , POINTER             :: z ! OUT
     TYPE(SpAMM_tree_2d_symm) , POINTER             :: x_stab, z_stab, y_stab, x_dual, z_dual, y_dual, y_tmp, z_tmp
-    REAL(SPAMM_KIND)                               :: Tau_0, Tau_S, delta_0
+    REAL(SpAMM_KIND)                               :: Tau_0, Tau_S, delta_0
     LOGICAL                                        :: DoDuals, DoScale, First, RightTight
     LOGICAL                                        :: converged
     INTEGER                                        :: i,  j, k, kount
-    REAL(SPAMM_KIND)                               :: scale, delta, TrX, FillN, FillN_prev
-    REAL(SPAMM_KIND)                               :: y_stab_work,z_stab_work,x_stab_work, y_dual_work,z_dual_work,x_dual_work
-    REAL(SPAMM_KIND)                               :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
+    REAL(SpAMM_KIND)                               :: scale, delta, TrX, FillN, FillN_prev
+    REAL(SpAMM_KIND)                               :: y_stab_work,z_stab_work,x_stab_work, y_dual_work,z_dual_work,x_dual_work
+    REAL(SpAMM_KIND)                               :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
     CHARACTER                                      :: RT
 
 
@@ -147,10 +147,10 @@ contains
     !
     !
     file_dual=TRIM(corename)//'_t0'//TRIM(DblToChar(tau_0))//'_ts'//TRIM(DblToChar(tau_s)) &
-            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SPAMM_BLOCK_SIZE))//'_dual.dat'
+            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SpAMM_BLOCK_SIZE))//'_dual.dat'
 
     file_stab=TRIM(corename)//'_t0'//TRIM(DblToChar(tau_0))//'_ts'//TRIM(DblToChar(tau_s)) &
-            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SPAMM_BLOCK_SIZE))//'_'//TRIM(RT)//'_stab.dat'
+            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SpAMM_BLOCK_SIZE))//'_'//TRIM(RT)//'_stab.dat'
     !
     open(unit=98, iostat=stat, file=file_stab,status='old')
     if(stat.eq.0) close(98, status='delete')
@@ -258,19 +258,13 @@ contains
        IF(I>0)THEN
 
           IF(DoDuals)THEN
-             write(* ,33) tau_0, tau_s, delta, scale, &
-                  kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
-             write(77,33) tau_0, tau_s, delta, scale, &
-                  kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
-             write(88,333)tau_0, tau_s, delta, scale, &
-                  dble(kount), TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
+             WRITE(* ,33) tau_0, tau_s, delta, scale,                   kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
+             WRITE(77,33) tau_0, tau_s, delta, scale,                   kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
+             WRITE(88,333)tau_0, tau_s, delta, scale,             dble(kount), TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
           elsE
-             write(* ,34) tau_0, tau_s, delta, scale, RightTight, &
-                  kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
-             write(77,34) tau_0, tau_s, delta, scale, RightTight, &
-                  kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
-             write(88,344)tau_0, tau_s, delta, scale, &
-                  dble(kount), TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
+             WRITE(* ,34) tau_0, tau_s, delta, scale, RightTight,       kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
+             WRITE(77,34) tau_0, tau_s, delta, scale, RightTight,       kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
+             WRITE(88,344)tau_0, tau_s, delta, scale,             dble(kount), TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
           ENDIF
        ENDIF
 
@@ -296,7 +290,7 @@ contains
        IF(First)THEN  ! first call only (for now)
           delta=delta_0*Sigmoid(75d0, 3.d-1, FillN)
        ELSE
-          delta=0
+          delta=SpAMM_Zero
        ENDIF
 
        ! scaling ...    scaling ...    scaling ...    scaling ...    scaling ...    scaling ...    scaling ...
@@ -425,14 +419,14 @@ contains
 
   SUBROUTINE SpAMMsand_Error_Analysis(kount, tau, tau_xtra, sc, delta)
 
-     real(SPAMM_KIND) :: Tau, Tau_xtra, sc, delta, FillN_stab, FillN_dual, &
+     real(spamm_kind) :: Tau, Tau_xtra, sc, delta, FillN_stab, FillN_dual, &
          dy_stab_sclr,dz_stab_sclr, &
          dx_stab_sclr,dy_dual_sclr, &
          dz_dual_sclr,dx_dual_sclr
 
     integer :: i,kount,j,k
 
-    real(SPAMM_KIND), dimension(:,:), ALLOCATABLE ::                        &
+    real(spamm_kind), dimension(:,:), ALLOCATABLE ::                        &
          dy_stab,dy_hat_stab,dz_stab,dz_hat_stab,dx_stab,dx_hat_stab,       &
          dy_dual,dy_hat_dual,dz_dual,dz_hat_dual,dx_dual,dx_hat_dual,       &
          mp_dy_stab,mp_dz_stab,mp_dy_dual,mp_dz_dual,mp_dx_stab,mp_dx_dual, &
@@ -597,8 +591,8 @@ contains
 #endif
 
   FUNCTION SpAMMsand_Basis_Compare(a,b) RESULT(compare)
-    REAL(SPAMM_KIND)                   :: compare, MAX_DOT
-    REAL(SPAMM_KIND), dimension(:,:)   :: a,b
+    REAL(SpAMM_kind)                   :: compare, MAX_DOT
+    REAL(spamm_kind), dimension(:,:)   :: a,b
     compare=SQRT( SUM( ( MATMUL(a,b) - MATMUL(b,a) )**2 ) ) &
          /SQRT( SUM(a**2)) /SQRT( SUM(b**2) )
   END FUNCTION SpAMMsand_Basis_Compare
@@ -610,8 +604,8 @@ contains
 
     TYPE(spamm_tree_2d_symm) ,   POINTER     :: d
     TYPE(spamm_tree_2d_symm) ,   POINTER     :: x
-    REAL(SPAMM_KIND), OPTIONAL,INTENT(IN)    :: low_prev, high_prev, low_new, high_new
-    REAL(SPAMM_KIND)                         :: SHFT,SCAL
+    REAL(SpAMM_KIND), OPTIONAL,INTENT(IN)    :: low_prev, high_prev, low_new, high_new
+    REAL(SpAMM_KIND)                         :: SHFT,SCAL
 
     integer :: i
 
@@ -634,8 +628,8 @@ contains
 
     TYPE(spamm_tree_2d_symm), POINTER  :: d
     TYPE(spamm_tree_2d_symm), POINTER  :: x
-    REAL(SPAMM_KIND),      INTENT(IN)  :: sc
-    REAL(SPAMM_KIND)                   :: SHFT,SCAL
+    REAL(SpAMM_KIND),      INTENT(IN)  :: sc
+    REAL(SpAMM_KIND)                   :: SHFT,SCAL
 
     SHFT=SpAMM_half*SQRT(sc)*SpAMM_three
     SCAL=SpAMM_half*(-sc)*SQRT(sc)
@@ -653,7 +647,7 @@ contains
 
   FUNCTION spammsand_scaling_invsqrt(xo) RESULT(sc)
 
-    REAL(SPAMM_KIND) :: xo, sc
+    REAL(SpAMM_KIND) :: xo, sc
     sc=MIN( Approx3, SpAMM_three/( SpAMM_one + SQRT(xo) + xo) )
 
   END FUNCTION spammsand_scaling_invsqrt
@@ -670,7 +664,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   implicit none
 
-  real(SPAMM_KIND), dimension(:,:), ALLOCATABLE :: s_dense
+  real(spamm_kind), dimension(:,:), ALLOCATABLE :: s_dense
 
   TYPE(spammsand_tree_2d_slices), pointer        :: z, z_head
   !, y, y_head
@@ -683,7 +677,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   character(len = 1000)                          :: matrix_filename
   ! Input parameters controling action, read from character args ...
-  real(SPAMM_KIND)                               :: tau_0, tau_S, delta, mu, mu_0
+  real(SpAMM_KIND)                               :: tau_0, tau_S, delta, mu, mu_0
   logical                                        :: DoDuals, DoScale, First, RightTight
   ! Here are the character args ...
   character(len=10)                              :: c_tau_0, c_tau_S,  c_scale, c_delta, &
@@ -693,10 +687,10 @@ program SpAMM_sandwich_inverse_squareroot
 
   integer, parameter                             :: slices=6
 
-  real(SPAMM_KIND), dimension(1:slices)          :: tau
+  real(SpAMM_KIND), dimension(1:slices)          :: tau
   ! Misc intermediate scalars ...
   integer                                        :: i,j,k, kount, stat
-  real(SPAMM_KIND)                               :: x_hi, x_new, logtau_strt, logtau_stop, logtau_dlta, &
+  real(SpAMM_KIND)                               :: x_hi, x_new, logtau_strt, logtau_stop, logtau_dlta, &
        tau_dlta, tau_xtra, error, tmp1,tmp2, final_tau, s_work, zs_work
 
   character(len = 200)                           :: corename
@@ -742,7 +736,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   corefile=TRIM(corename)//'_Tau0='//TRIM(DblToChar(tau_0))//'_TauS='//TRIM(DblToChar(tau_s)) &
                          //'_Stab='//TRIM(DblToChar(delta))//'_Shft='//TRIM(DblToChar(mu_0))  &
-                         //'_Blks='//TRIM(IntToChar(SPAMM_BLOCK_SIZE))                        &
+                         //'_Blks='//TRIM(IntToChar(SpAMM_BLOCK_SIZE))                        &
                          //'_Dual='//TRIM(LogicalToChar(DoDuals))                             &
                          //'_Rght='//TRIM(LogicalToChar(righttight))                          &
                          //'_Scal='//TRIM(LogicalToChar(DoScale))
@@ -765,7 +759,7 @@ program SpAMM_sandwich_inverse_squareroot
   ! symmetrize it first ...
   S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))
   ! convert it to a quadtree
-  s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, s )
+  s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )
 
   ! sandwich setup ... sandwich setup ... sandwich setup ... sandwich setup ... sandwich setup ...
   logtau_strt=LOG10(tau_0)                             ! starting accuracy
@@ -832,7 +826,7 @@ program SpAMM_sandwich_inverse_squareroot
 
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, s      , z%tau_s, NT_O=.FALSE., in_O = t )
      s => SpAMM_tree_2d_symm_times_tree_2d_symm(       t, z_total, z%tau_S, NT_O=.TRUE. , in_O = s )
-
+    
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, z%mtx, z%tau_0, z%tau_S, delta,  &
                                                             DoDuals, RightTight, DoScale, First, kount)
 
@@ -1037,9 +1031,9 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, x
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
-!!$    REAL(SPAMM_KIND) :: tau
+!!$    REAL(spamm_kind) :: tau
 !!$
-!!$    real(SPAMM_KIND), dimension(1:z%frill%ndimn(1),1:z%frill%ndimn(2)) :: x_d, z_d, d_d
+!!$    real(spamm_kind), dimension(1:z%frill%ndimn(1),1:z%frill%ndimn(2)) :: x_d, z_d, d_d
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1062,9 +1056,9 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, s, x
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
 !!$
-!!$    real(SPAMM_KIND)                               :: compare
+!!$    real(spamm_kind)                               :: compare
 !!$
-!!$    real(SPAMM_KIND), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
+!!$    real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1082,9 +1076,9 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, s,x
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
 !!$
-!!$    real(SPAMM_KIND)                               :: compare
+!!$    real(spamm_kind)                               :: compare
 !!$
-!!$    real(SPAMM_KIND), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
+!!$    real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1162,7 +1156,7 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, OPTIONAL   :: in_o
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
 !!$
-!!$    real(SPAMM_KIND), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_stab
+!!$    real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_stab
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1177,11 +1171,11 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$
 !!$  SUBROUTINE SpAMMsand_Error_Analysis2(kount, tau)
 !!$
-!!$    real(SPAMM_KIND) :: Tau, FillN_stab, FillN_dual
+!!$    real(spamm_kind) :: Tau, FillN_stab, FillN_dual
 !!$
 !!$    integer :: i,kount,j,k
 !!$
-!!$    real(SPAMM_KIND), dimension(:,:), ALLOCATABLE :: &
+!!$    real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
 !!$    dz_stab, dz_hat_stab, dx_stab, dx_hat_stab,       &
 !!$    dy_dual, dy_hat_dual,dz_dual, dz_hat_dual,       &
 !!$    dx_dual, dx_hat_dual,mp_stab, mp_dual,           &

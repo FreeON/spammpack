@@ -294,22 +294,10 @@ find_program(ETAGS etags)
 if(ETAGS)
   add_custom_target(etags
     ${ETAGS}
-    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.F90
-    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.c
-    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.h)
-endif()
-
-#add_subdirectory(src-solvers)
-add_subdirectory(src)
-add_subdirectory(spammsand)
-add_subdirectory(utilities)
-add_subdirectory(tools)
-
-set(SPAMM_TESTING FALSE
-  CACHE BOOL "Compile test suite.")
-if(SPAMM_TESTING)
-  enable_testing()
-  add_subdirectory(tests)
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities,spammsand}/*.F90
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities,spammsand}/*.c
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities,spammsand}/*.h
+    )
 endif()
 
 set(CPACK_PACKAGE_NAME "spammpack")
@@ -326,45 +314,11 @@ set(CPACK_SOURCE_GENERATOR TBZ2)
 set(CPACK_RPM_PACKAGE_LICENSE "BSD")
 set(CPACK_RPM_PACKAGE_URL "http://www.freeon.org")
 
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://www.freeon.org/spammpack")
+#add_subdirectory( src-solvers )
+#add_subdirectory( tools )
 
-list(APPEND CPACK_SOURCE_IGNORE_FILES
-  "/${CPACK_PACKAGE_NAME}.*deb$"
-  "/${CPACK_PACKAGE_NAME}.*rpm$"
-  "/${CPACK_PACKAGE_NAME}.*tar.bz2$"
-  "/.*[.]cmake$"
-  "/CMakeCache[.]txt$"
-  "/CMakeFiles/"
-  "/Doxyfile$"
-  "/Makefile$"
-  "/[.]git/"
-  "/_CPack_Packages/"
-  "/html/"
-  "/install_manifest[.]txt"
-  "/latex/"
-  "/lib.*[.]a$"
-  "/lib.*[.]so.*$"
-  "/man/"
-  "[.]mod$"
-  "tests/testmatrix.*$"
- )
+add_subdirectory( src )
+add_subdirectory( spammsand )
 
-include(CPack)
-
-set(INCLUDE_INSTALL_DIR include)
-set(LIB_INSTALL_DIR lib)
-
-include(CMakePackageConfigHelpers
-  OPTIONAL RESULT_VARIABLE PACKAGE_CONFIG_FOUND)
-if(PACKAGE_CONFIG_FOUND)
-  configure_package_config_file(spammpackConfig.cmake.in spammpackConfig.cmake
-    INSTALL_DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
-    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR)
-  write_basic_package_version_file(spammpackConfigVersion.cmake
-    VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
-    COMPATIBILITY SameMajorVersion)
-  install(FILES
-    ${CMAKE_BINARY_DIR}/spammpackConfig.cmake
-    ${CMAKE_BINARY_DIR}/spammpackConfigVersion.cmake
-    DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake)
-endif()
+#add_subdirectory( tests )
+#add_subdirectory( utilities )

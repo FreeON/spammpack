@@ -1,0 +1,30 @@
+set term pngcairo dashed transparent enhanced font 'Courier Bold,16'
+
+set output "plt_h2o_70_TZP.png" 
+
+set logscale y
+
+set ylabel 'error' offset 3,0
+set xlabel 'iteration' offset 0,0.5
+
+set style line 1 lt 2 lc rgb "orange" lw 3
+set style line 2 lt 2 lc rgb "red" lw 3
+set style line 3 lt 2 lc rgb "green" lw 3
+
+set yrange [1.e-12:1.]
+set size ratio .75
+#
+set label 1 'naive'           tc rgb "green"     at 1.5, 0.000000001 
+set label 2 'scaled'          tc rgb "orange"    at 1.5, 0.000000000085
+set label 3 '|1d-3>|1d-7>|1d-11>'  tc rgb "red"  at 1.5, 0.00000000001
+
+plot [1:20] "h2o_070_TZP_16by_3slices.dat" using 1:2 w lines ls 2 notitle,\
+            "h2o_070_TZP_512by_no_scaling.dat" using 1:2 w lines ls 3 notitle,\
+	    "h2o_070_TZP_512by_full_scaling.dat" using 1:2 w lines ls 1 notitle
+            
+
+            
+
+
+
+     

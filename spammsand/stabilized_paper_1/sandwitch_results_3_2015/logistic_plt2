@@ -1,0 +1,44 @@
+set term pngcairo dashed transparent enhanced font 'Courier Bold,16'
+set output "plt_scaled_logistic_map.png" 
+
+a=sqrt(3)
+b=2.85
+
+i(x)=x*b*(9.0/4.0)
+
+h(x)=.5*(a*x)*(3.0-a**2*x**2)
+#unstable_scaled(x)=h(sqrt(x))*h(sqrt(x))
+
+unstable_scaled(x) = 0.5*(3.0-3*x) * 3*x * 0.5*(3.0-3*x)
+stable_scaled(x) = 0.5*(3.0-b*x) * b*x * 0.5*(3.0-b*x)
+unscaled(x) = 0.5*(3.0-x) * x * 0.5*(3.0-x)
+
+hh(x)=h(sqrt(x))*h(sqrt(x))
+
+set yrange [0.:1.0]
+f(x)=(g(x+1e-3)-g(x-1e-3))/2e-3
+
+r1=3.0/a
+r2=1.0/a
+d1(x)=exp(-100000*(x-r1)**2)
+d2(x)=exp(-100000*(x-r2)**2)
+
+low_old=0.0
+high_old=1.0
+low_new=1e-2
+high_new=1.0
+s(x)=low_new+(x-low_old)*(high_new-low_new)/(high_old-low_old)
+
+set style line 1 lt 3 lc rgb "orange" lw 3
+set style line 2 lt 2 lc rgb "green" lw 3
+set style line 3 lt 1 lc rgb "red" lw 3
+set size ratio .75
+
+set label 1 'unscaled (naive)'          tc rgb "orange"     at 1.5, 0.97
+set label 2 'scaled (a=3),  unstable'   tc rgb "green"    at 1.5, 0.92
+set label 3 'scaled (a=2.85), stable'   tc rgb "red"    at 1.5, 0.87
+
+
+plot [0.0:3.0] unstable_scaled(x) ls 2 notitle,stable_scaled(x) ls 3 notitle, unscaled(x) ls 1 notitle
+
+

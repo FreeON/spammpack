@@ -1,0 +1,57 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: challacombe_haut_bock_2015_nbody_square_root_iteration.aux
+The style file: apsrev.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Database file #1: challacombe_haut_bock_2015_nbody_square_root_iteration.bib
+Repeated entry---line 2555 of file challacombe_haut_bock_2015_nbody_square_root_iteration.bib
+ : @article{Kahan2013
+ :                   ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for ""
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--missing school in Gray2003
+Warning--can't use both volume and number fields in rodrigues2014triolet
+You've used 96 entries,
+            3411 wiz_defined-function locations,
+            1791 strings with 27304 characters,
+and the built_in function-call counts, 64938 in all, are:
+= -- 3860
+> -- 1847
+< -- 333
++ -- 1437
+- -- 453
+* -- 8487
+:= -- 6974
+add.period$ -- 96
+call.type$ -- 96
+change.case$ -- 387
+chr.to.int$ -- 92
+cite$ -- 98
+duplicate$ -- 6075
+empty$ -- 5725
+format.name$ -- 1222
+if$ -- 12468
+int.to.chr$ -- 5
+int.to.str$ -- 97
+missing$ -- 933
+newline$ -- 303
+num.names$ -- 294
+pop$ -- 1741
+preamble$ -- 1
+purify$ -- 384
+quote$ -- 0
+skip$ -- 2428
+stack$ -- 0
+substring$ -- 2278
+swap$ -- 4701
+text.length$ -- 266
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 562
+warning$ -- 2
+while$ -- 313
+width$ -- 0
+write$ -- 980
+(There was 1 error message)
